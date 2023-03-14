@@ -21,6 +21,12 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.G
 builder.Services.AddSingleton<DataImage, ImageData>();
 builder.Services.AddSingleton<DataEvent, EventData>();
 builder.Services.AddSingleton<DataSpace, SpaceData>();
+builder.Services.AddSwaggerGen(c =>
+{
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

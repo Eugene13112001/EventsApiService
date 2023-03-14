@@ -24,6 +24,11 @@ namespace WebApplication46.Controllers
         {
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         }
+        /// <summary>
+        /// Deletes a specific TodoItem.
+        /// </summary>
+        ///  <param name="id"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("api/Events")]
         public async Task<IActionResult> GetAll()
