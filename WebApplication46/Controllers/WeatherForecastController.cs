@@ -25,10 +25,13 @@ namespace WebApplication46.Controllers
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         }
         /// <summary>
-        /// Deletes a specific TodoItem.
+        /// Получить все события
         /// </summary>
-        ///  <param name="id"></param>
-        /// <returns></returns>
+        ///  <remarks>
+        /// На вход ничего не принимает
+        /// Запрос возвращает полный список всех событий в базе
+        /// </remarks>
+        /// <returns>Список всех событий</returns>
         [HttpGet]
         [Route("api/Events")]
         public async Task<IActionResult> GetAll()
@@ -45,8 +48,20 @@ namespace WebApplication46.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        /// <summary>
+        /// Получить список событий, который попадают в данный промежуток времени
+        /// </summary>
+        ///  <remarks>
+        /// На вход принимает два параметра  :
+        /// begin типа datetime - начало периода
+        /// end типа datetime - конец периода
+        /// Например:
+        /// begin: 2023-03-14T22:02:57.704Z
+        /// end: 2023-04-14T22:02:57.704Z
+        /// Запрос список событий, которые попадают в данный промежуток времени
+        /// </remarks>
         [HttpGet]
-        [Route("api/Events/begin={begin:datetime}&end={end:datetime}")]
+        [Route("api/Events/{begin:datetime}&{end:datetime}")]
         public async Task<IActionResult> GetWithFiltr([FromRoute]  DateTime begin, DateTime end)
         {
             try
@@ -63,6 +78,16 @@ namespace WebApplication46.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        /// <summary>
+        /// Получить событие по его id
+        /// </summary>
+        ///  <remarks>
+        /// На вход принимает параметр id типа Guid
+        /// Например:
+        /// 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        /// Запрос возвращает всю информацию о событии, если оно есть
+        /// А если нет, то возвращает сообщение об этом
+        /// </remarks>
         [HttpGet]
         [Route("api/Events/{id:guid}")]
         public async Task<IActionResult> GetEvent([FromRoute] Guid id)
@@ -73,13 +98,29 @@ namespace WebApplication46.Controllers
                 CancellationToken token = new CancellationToken();
                 Event? ev = await _mediator.Send(client, token);
                 if (ev == null) return BadRequest("События с таким id нет");
-                return new JsonResult(new { id = ev });
+                return new JsonResult(new { Event = ev });
             }
             catch (Exception ex) 
             {
                 return BadRequest(ex.Message);
             }
         }
+        /// <summary>
+        /// Добавить новое событие 
+        /// </summary>
+        ///  <remarks>
+        /// На вход принимает шаблон события:
+        /// Например:
+        /// {
+            /// "name": "string",
+            ///"description": "string",
+            ///"begin": "2023-03-14T21:57:07.693Z",
+            /// "end": "2023-03-14T21:57:07.693Z",
+            /// "imageId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            ///"spaceId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        /// }
+        /// Запрос возвращает id,  данный добавленному событию в базе данных 
+        /// </remarks>
         [Route("api/Events")]
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] AddEventCommand client,
@@ -95,6 +136,26 @@ namespace WebApplication46.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        /// <summary>
+        /// Изменить событие  
+        /// </summary>
+        ///  <remarks>
+        /// На вход через строку запроса принимает id события, которое нужно изменить:
+        /// Например:
+        /// 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        /// Также на вход через body передается шаблон нового события:
+        /// Например:
+        /// {
+            /// "name": "string",
+            ///"description": "string",
+            ///"begin": "2023-03-14T21:57:07.693Z",
+            /// "end": "2023-03-14T21:57:07.693Z",
+            /// "imageId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            ///"spaceId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        /// } 
+        /// Запрос возвращает измененное событие, если оно было успешно изменено
+        /// Если нет, то возвращает причину ошибки
+        /// </remarks>
         [HttpPut]
         [Route("api/Events/{id:guid}")]
         public async Task<IActionResult> Change([FromRoute] Guid id , [FromBody] ChangeEventCommand client,
@@ -103,8 +164,18 @@ namespace WebApplication46.Controllers
             client.Id = id;
             Event? ev = await _mediator.Send(client, token);
             if (ev == null) return BadRequest("События с таким id нет");
-            return new JsonResult(new { id = ev.Id });
+            return new JsonResult(new { id = ev });
         }
+        /// <summary>
+        /// Удалить событие по id 
+        /// </summary>
+        ///  <remarks>
+        /// На вход принимает id события:
+        /// Например:
+        /// 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        /// Запрос возвращает true, если событие было успешно удален
+        /// Если нет, то возвращает причину ошибки
+        /// </remarks>
         [HttpDelete]
         [Route("api/Events/{id:guid}")]
         public async Task<IActionResult> Delete([FromRoute] Guid id, [FromRoute] DeleteEventCommand client,
