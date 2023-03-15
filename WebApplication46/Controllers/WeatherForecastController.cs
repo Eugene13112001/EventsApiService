@@ -193,10 +193,17 @@ namespace WebApplication46.Controllers
         public async Task<IActionResult> Change([FromRoute] Guid id , [FromBody] ChangeEventCommand client,
            CancellationToken token)
         {
-            client.Id = id;
-            Event? ev = await _mediator.Send(client, token);
-            if (ev == null) return BadRequest("События с таким id нет");
-            return new JsonResult(new { id = ev });
+            try
+            {
+                client.Id = id;
+                Event? ev = await _mediator.Send(client, token);
+                if (ev == null) return BadRequest("События с таким id нет");
+                return new JsonResult(new { id = ev });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
         /// <summary>
         /// Удалить событие по id 
@@ -214,13 +221,20 @@ namespace WebApplication46.Controllers
         /// </remarks>
         [HttpDelete]
         [Route("api/Events/{id:guid}")]
-        public async Task<IActionResult> Delete([FromRoute] Guid id, [FromRoute] DeleteEventCommand client,
-           CancellationToken token)
+        public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
-            client.Id = id;
-            bool ev = await _mediator.Send(client, token);
-            if (ev is false) return BadRequest("События с таким id нет");
-            return new JsonResult(true);
+            try
+            {
+                DeleteEventCommand client = new DeleteEventCommand { Id = id };
+                CancellationToken token = new CancellationToken();
+                bool ev = await _mediator.Send(client, token);
+                if (ev is false) return BadRequest("События с таким id нет");
+                return new JsonResult(true);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }
