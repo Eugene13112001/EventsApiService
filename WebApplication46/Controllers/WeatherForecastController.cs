@@ -7,6 +7,7 @@ using WebApplication46.Features.EventDelete;
 using WebApplication46.Features.EventGet;
 using WebApplication46.Features.EventGetAll;
 using WebApplication46.Features.EventGetFiltr;
+using WebApplication46.Filtrs;
 
 namespace WebApplication46.Controllers
 {
@@ -33,20 +34,17 @@ namespace WebApplication46.Controllers
         /// </remarks>
         /// <returns>Список всех событий</returns>
         [HttpGet]
+        [TypeFilter(typeof(SampleExceptionFilter))]
         [Route("api/Events")]
         public async Task<IActionResult> GetAll()
         {
-            try
-            {
+            
                 GetAllEventCommand client= new GetAllEventCommand();
                 CancellationToken token = new CancellationToken();
                 List<Event> ev = await _mediator.Send(client, token);
                 return new JsonResult(new { id = ev });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            
+         
         }
         /// <summary>
         /// Получить список событий, который попадают в данный промежуток времени
@@ -67,22 +65,18 @@ namespace WebApplication46.Controllers
         /// Запрос список событий, которые попадают в данный промежуток времени
         /// </remarks>
         [HttpGet]
+        [TypeFilter(typeof(SampleExceptionFilter))]
         [Route("api/Events/{begin:datetime}&{end:datetime}")]
         public async Task<IActionResult> GetWithFiltr([FromRoute]  DateTime begin, DateTime end)
         {
-            try
-            {
+            
+            
                 GetAllEventFiltrCommand client = new GetAllEventFiltrCommand { Begin=begin, End = end};
                 CancellationToken token = new CancellationToken();
                 List<Event> ev = await _mediator.Send(client, token);
                 return new JsonResult(new { id = ev });
-            }
-            catch (Exception ex)
-
-
-            {
-                return BadRequest(ex.Message);
-            }
+            
+           
         }
         /// <summary>
         /// Получить событие по его id
@@ -98,21 +92,17 @@ namespace WebApplication46.Controllers
         /// А если нет, то возвращает сообщение об этом
         /// </remarks>
         [HttpGet]
+        [TypeFilter(typeof(SampleExceptionFilter))]
         [Route("api/Events/{id:guid}")]
         public async Task<IActionResult> GetEvent([FromRoute] Guid id)
         {
-            try
-            {
+            
                 GetEventCommand client = new GetEventCommand { Id = id};
                 CancellationToken token = new CancellationToken();
                 Event? ev = await _mediator.Send(client, token);
                 if (ev == null) return BadRequest("События с таким id нет");
                 return new JsonResult(new { Event = ev });
-            }
-            catch (Exception ex) 
-            {
-                return BadRequest(ex.Message);
-            }
+           
         }
         /// <summary>
         /// Добавить новое событие 
@@ -141,19 +131,16 @@ namespace WebApplication46.Controllers
         /// 
         /// </remarks>
         [Route("api/Events")]
+        [TypeFilter(typeof(SampleExceptionFilter))]
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] AddEventCommand client,
            CancellationToken token)
         {
-            try
-            {
+          
+           
                 Event ev = await _mediator.Send(client, token);
                 return new JsonResult(new { id = ev.Id });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+           
         }
         /// <summary>
         /// Изменить событие  
@@ -188,22 +175,19 @@ namespace WebApplication46.Controllers
         /// 
         /// Если нет, то возвращает причину ошибки
         /// </remarks>
+        
         [HttpPut]
+        [TypeFilter(typeof(SampleExceptionFilter))]
         [Route("api/Events/{id:guid}")]
         public async Task<IActionResult> Change([FromRoute] Guid id , [FromBody] ChangeEventCommand client,
            CancellationToken token)
         {
-            try
-            {
+            
                 client.Id = id;
                 Event? ev = await _mediator.Send(client, token);
                 if (ev == null) return BadRequest("События с таким id нет");
                 return new JsonResult(new { id = ev });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+           
         }
         /// <summary>
         /// Удалить событие по id 
@@ -220,21 +204,18 @@ namespace WebApplication46.Controllers
         /// Если нет, то возвращает причину ошибки
         /// </remarks>
         [HttpDelete]
+        [TypeFilter(typeof(SampleExceptionFilter))]
         [Route("api/Events/{id:guid}")]
         public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
-            try
-            {
+            
                 DeleteEventCommand client = new DeleteEventCommand { Id = id };
                 CancellationToken token = new CancellationToken();
                 bool ev = await _mediator.Send(client, token);
                 if (ev is false) return BadRequest("События с таким id нет");
                 return new JsonResult(true);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            
+           
         }
     }
 }
